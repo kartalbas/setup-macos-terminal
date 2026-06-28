@@ -8,7 +8,7 @@ require_macos; require_brew
 CLI_FORMULAE=(
   eza bat ripgrep fd fzf zoxide git-delta lazygit gh tmux
   jq yq tree wget htop btop tldr fastfetch
-  mise node uv pipx
+  mise nvm node uv pipx
 )
 
 for f in "${CLI_FORMULAE[@]}"; do
@@ -16,6 +16,9 @@ for f in "${CLI_FORMULAE[@]}"; do
     info "Installing $f..."; run brew install "$f"
   fi
 done
+
+# nvm needs its working dir to exist; the ~/.zshrc sources it from there.
+run mkdir -p "$HOME/.nvm"
 
 # fzf key-bindings & fuzzy completion (writes to its own files; safe to re-run)
 if has fzf && [[ "${DRY_RUN:-0}" != "1" ]]; then

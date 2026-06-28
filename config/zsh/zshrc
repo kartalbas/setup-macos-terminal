@@ -39,6 +39,16 @@ command -v starship >/dev/null && eval "$(starship init zsh)"
 command -v zoxide   >/dev/null && eval "$(zoxide init zsh)"
 command -v mise     >/dev/null && eval "$(mise activate zsh)"
 
+# nvm — Node Version Manager (Homebrew). Use `nvm use`/`nvm install <ver>` for
+# per-project node versions. (mise also manages node; nvm takes over once loaded.)
+export NVM_DIR="$HOME/.nvm"
+if [[ -n "$BREW_PREFIX" && -s "$BREW_PREFIX/opt/nvm/nvm.sh" ]]; then
+  [[ -d "$NVM_DIR" ]] || mkdir -p "$NVM_DIR"
+  source "$BREW_PREFIX/opt/nvm/nvm.sh"
+  [[ -r "$BREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm" ]] && \
+    source "$BREW_PREFIX/opt/nvm/etc/bash_completion.d/nvm"
+fi
+
 # fzf key-bindings (Ctrl-R history, Ctrl-T files, Alt-C cd) + completion
 [[ -r "$BREW_PREFIX/opt/fzf/shell/key-bindings.zsh" ]] && \
   source "$BREW_PREFIX/opt/fzf/shell/key-bindings.zsh"

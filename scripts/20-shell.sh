@@ -9,5 +9,12 @@ for f in starship zsh-autosuggestions zsh-syntax-highlighting zsh-completions; d
   fi
 done
 
+# PowerShell (pwsh) — installed as a cask alongside zsh.
+if brew_has_cask powershell; then
+  skip "powershell"
+else
+  info "Installing powershell (pwsh)..."; run brew install --cask powershell
+fi
+
 ok "Shell tooling installed."
 info "The 'link' step wires these into ~/.zshrc and ~/.config/starship.toml"

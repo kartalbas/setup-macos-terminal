@@ -16,6 +16,7 @@ brew "starship"                  # fast, informative cross-shell prompt
 brew "zsh-autosuggestions"       # ghost-text completion from history
 brew "zsh-syntax-highlighting"   # command coloring as you type
 brew "zsh-completions"           # extra completion definitions
+cask "powershell"                # PowerShell (pwsh) — cross-platform shell
 
 # ───────────────────── Modern CLI core ──────────────────
 brew "eza"            # ls replacement (icons, git status, tree)
@@ -39,6 +40,7 @@ brew "fastfetch"     # system info banner
 
 # ─────────────── Languages & Version Management ──────────
 brew "mise"          # polyglot runtime manager (node, python, go, ...)
+brew "nvm"           # Node Version Manager — per-project node versions
 brew "node"          # runtime for Claude Code MCP servers & JS tooling
 brew "uv"            # fast Python package/runtime manager (+ uv tool)
 brew "pipx"          # isolated installs of Python CLI apps

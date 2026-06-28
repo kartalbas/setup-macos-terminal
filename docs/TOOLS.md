@@ -7,6 +7,7 @@
 | **Starship** | Fast prompt: git, language, k8s context | shown automatically |
 | **zsh-autosuggestions** | Grey ghost-text from history | press `→` to accept |
 | **zsh-syntax-highlighting** | Colors commands as you type | invalid commands turn red |
+| **PowerShell** | Cross-platform shell (`pwsh`) | `pwsh` |
 
 ## Modern CLI
 | Tool | Replaces | Try |
@@ -29,6 +30,7 @@
 | Tool | What it is | Try |
 |------|-----------|-----|
 | **mise** | Polyglot version manager | `mise use node@22 python@3.12` |
+| **nvm** | Node Version Manager (per-project node) | `nvm install 22 && nvm use 22` |
 | **node** | JS runtime (Claude Code MCP, tooling) | `node -v` |
 | **uv** | Fast Python pkg/runtime manager | `uv venv && uv pip install …` |
 | **pipx** | Isolated Python CLI apps | `pipx list` |
