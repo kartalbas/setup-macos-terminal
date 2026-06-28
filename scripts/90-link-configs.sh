@@ -29,6 +29,7 @@ link() {
 link "$CFG/wezterm/wezterm.lua"   "$HOME/.config/wezterm/wezterm.lua"
 link "$CFG/starship/starship.toml" "$HOME/.config/starship.toml"
 link "$CFG/zsh/zshrc"             "$HOME/.zshrc"
+link "$CFG/pwsh/profile.ps1"      "$HOME/.config/powershell/profile.ps1"
 # User-specific config — rendered into generated/ (git-ignored).
 link "$GEN/gitconfig"             "$HOME/.gitconfig"
 

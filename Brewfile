@@ -16,7 +16,7 @@ brew "starship"                  # fast, informative cross-shell prompt
 brew "zsh-autosuggestions"       # ghost-text completion from history
 brew "zsh-syntax-highlighting"   # command coloring as you type
 brew "zsh-completions"           # extra completion definitions
-cask "powershell"                # PowerShell (pwsh) — cross-platform shell
+brew "powershell"                # PowerShell LTS (pwsh) — cross-platform shell
 
 # ───────────────────── Modern CLI core ──────────────────
 brew "eza"            # ls replacement (icons, git status, tree)
