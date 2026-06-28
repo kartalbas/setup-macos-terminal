@@ -1,0 +1,64 @@
+# ════════════════════════════════════════════════════════════════════════
+#  EXAMPLE TEMPLATE — the only config with user-specific data.
+#  Run  ./install.sh configure  to generate  generated/gitconfig with your
+#  name and email filled into the [user] block below.
+#  Everything else below is standard config, identical for everyone.
+# ════════════════════════════════════════════════════════════════════════
+# delta-powered diffs + sensible developer defaults.
+[user]
+	name = __GIT_NAME__
+	email = __GIT_EMAIL__
+
+[core]
+	pager = delta
+	editor = vim
+	autocrlf = input
+
+# Store HTTPS credentials in the macOS Keychain so you authenticate once.
+[credential]
+	helper = osxkeychain
+
+[init]
+	defaultBranch = master
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true        # n / N to move between diff sections
+	line-numbers = true
+	side-by-side = true
+	hyperlinks = true
+
+[merge]
+	conflictstyle = zdiff3
+
+[diff]
+	colorMoved = default
+	algorithm = histogram
+
+[pull]
+	rebase = true
+
+[fetch]
+	prune = true
+
+[push]
+	autoSetupRemote = true
+	default = current
+
+[rerere]
+	enabled = true
+
+[column]
+	ui = auto
+
+[alias]
+	st = status -sb
+	co = checkout
+	br = branch
+	ci = commit
+	lg = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(green)%ar%C(reset) %C(white)%s%C(reset) %C(dim)- %an%C(reset)%C(auto)%d%C(reset)'
+	last = log -1 HEAD --stat
+	unstage = restore --staged
+	amend = commit --amend --no-edit

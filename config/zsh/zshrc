@@ -1,0 +1,117 @@
+# Managed by repos/setup-macos-terminal — reload after edits with:  exec zsh
+
+# ───────────────────────────── PATH ─────────────────────────────
+export PATH="$HOME/.local/bin:$PATH"          # Claude Code + user binaries
+
+# Homebrew (Apple Silicon → /opt/homebrew, Intel → /usr/local)
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+BREW_PREFIX="$(brew --prefix 2>/dev/null)"
+
+# ─────────────────────────── History ────────────────────────────
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt SHARE_HISTORY HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE \
+       HIST_REDUCE_BLANKS INC_APPEND_HISTORY EXTENDED_HISTORY
+
+# ─────────────────────── Completion system ──────────────────────
+if [[ -n "$BREW_PREFIX" ]]; then
+  fpath=("$BREW_PREFIX/share/zsh-completions" "$BREW_PREFIX/share/zsh/site-functions" $fpath)
+fi
+autoload -Uz compinit && compinit -C
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'   # case-insensitive
+
+# ───────────────────────── zsh plugins ──────────────────────────
+[[ -r "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && \
+  source "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
+# syntax-highlighting must be sourced LAST among plugins
+[[ -r "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && \
+  source "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+
+# ───────────────────── Prompt + navigation ──────────────────────
+command -v starship >/dev/null && eval "$(starship init zsh)"
+command -v zoxide   >/dev/null && eval "$(zoxide init zsh)"
+command -v mise     >/dev/null && eval "$(mise activate zsh)"
+
+# fzf key-bindings (Ctrl-R history, Ctrl-T files, Alt-C cd) + completion
+[[ -r "$BREW_PREFIX/opt/fzf/shell/key-bindings.zsh" ]] && \
+  source "$BREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
+[[ -r "$BREW_PREFIX/opt/fzf/shell/completion.zsh" ]] && \
+  source "$BREW_PREFIX/opt/fzf/shell/completion.zsh"
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --info=inline'
+
+# ──────────────────────────── Aliases ───────────────────────────
+# modern replacements
+command -v eza  >/dev/null && {
+  alias ls='eza --icons --group-directories-first'
+  alias ll='eza -lah --icons --git --group-directories-first'
+  alias la='eza -a --icons'
+  alias lt='eza --tree --level=2 --icons'
+}
+command -v bat     >/dev/null && { alias cat='bat --paging=never'; export BAT_THEME='ansi'; }
+command -v lazygit >/dev/null && alias lg='lazygit'
+command -v btop    >/dev/null && alias top='btop'
+
+# git
+alias g='git'
+alias gs='git status -sb'
+alias gd='git diff'
+alias gp='git push'
+alias gl='git pull'
+alias gco='git checkout'
+
+# ──────────────────── Kubernetes / DevOps ───────────────────────
+if command -v kubectl >/dev/null; then
+  # kubecolor wraps kubectl with colored output, if installed
+  if command -v kubecolor >/dev/null; then
+    alias k='kubecolor'
+    compdef kubecolor=kubectl 2>/dev/null
+  else
+    alias k='kubectl'
+  fi
+  source <(kubectl completion zsh)
+  alias kgp='kubectl get pods'
+  alias kgs='kubectl get svc'
+  alias kga='kubectl get all'
+  alias kdesc='kubectl describe'
+  alias kctx='kubectx'
+  alias kns='kubens'
+  export KUBE_EDITOR='vim'
+fi
+command -v helm   >/dev/null && source <(helm completion zsh)
+command -v argocd >/dev/null && source <(argocd completion zsh)
+command -v gh     >/dev/null && eval "$(gh completion -s zsh 2>/dev/null)" 2>/dev/null
+
+# ─────────────────────── Cloud provider CLIs ────────────────────────
+# Google Cloud SDK (gcloud / gsutil / bq) — path + completion
+if [[ -n "$BREW_PREFIX" && -d "$BREW_PREFIX/share/google-cloud-sdk" ]]; then
+  source "$BREW_PREFIX/share/google-cloud-sdk/path.zsh.inc" 2>/dev/null
+  source "$BREW_PREFIX/share/google-cloud-sdk/completion.zsh.inc" 2>/dev/null
+fi
+# Azure CLI (az) completion (ships a bash completion; bridge via bashcompinit)
+if command -v az >/dev/null && [[ -r "$BREW_PREFIX/etc/bash_completion.d/az" ]]; then
+  autoload -Uz bashcompinit && bashcompinit
+  source "$BREW_PREFIX/etc/bash_completion.d/az"
+fi
+# AWS CLI (aws) completion
+if command -v aws_completer >/dev/null; then
+  autoload -Uz bashcompinit && bashcompinit
+  complete -C "$(command -v aws_completer)" aws
+fi
+
+# ───────────────────────────── Misc ─────────────────────────────
+export EDITOR='vim'
+export VISUAL="$EDITOR"
+export CLICOLOR=1
+export LANG='en_US.UTF-8'
+
+# Per-machine overrides that shouldn't live in git:
+[[ -r "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
