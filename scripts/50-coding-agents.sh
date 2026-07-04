@@ -29,6 +29,21 @@ case ":$PATH:" in *":$HOME/.local/bin:"*) :;; *) export PATH="$HOME/.local/bin:$
 
 ok "Claude Code ready. Run ${C_BOLD}claude${C_RESET} in any project; first run will prompt to log in."
 
+# --- GitHub auth (gh) --------------------------------------------------------
+# gh is installed in the cli step; authenticate it here so git push / PRs and
+# the optional Copilot CLI work. Interactive + idempotent; skipped unattended.
+if has gh; then
+  if gh auth status >/dev/null 2>&1; then
+    skip "gh auth (already logged in)"
+  elif [[ "${ASSUME_YES:-0}" == "1" || ! -t 0 || "${DRY_RUN:-0}" == "1" ]]; then
+    info "Skipping GitHub login (non-interactive). Run later: ${C_BOLD}gh auth login${C_RESET}"
+  elif confirm "Log in to GitHub now (gh auth login)?"; then
+    run gh auth login || warn "gh auth login skipped/failed (continuing)"
+  fi
+else
+  info "gh not found — run the ${C_BOLD}cli${C_RESET} step first, then ${C_BOLD}gh auth login${C_RESET}."
+fi
+
 # --- Optional extra agents (skipped unless ASSUME_YES or you confirm) --------
 if confirm "Also install optional agents (aider, GitHub Copilot CLI)?"; then
   # aider — Python-based pair-programming agent, isolated via uv tool

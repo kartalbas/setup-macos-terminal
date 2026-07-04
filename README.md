@@ -41,7 +41,7 @@ After it finishes, open a **new WezTerm window** (or `exec zsh`).
 | **shell**    | Starship prompt, zsh autosuggestions / syntax-highlighting / completions, **PowerShell (pwsh)** |
 | **cli**      | eza, bat, ripgrep, fd, fzf, zoxide, delta, lazygit, gh, tmux, jq, yq, btop, mise, **nvm**, node, uv… |
 | **devops**   | kubectl, kubectx, kubecolor, helm, k9s, stern, kustomize, argocd, vault, terraform, opentofu, sops, dive, OrbStack + cloud CLIs **aws / az / gcloud** |
-| **agents**   | **Claude Code** (native, in `~/.local/bin`), node/uv runtimes, optional aider + Copilot CLI |
+| **agents**   | **Claude Code** (native, in `~/.local/bin`), node/uv runtimes, optional **GitHub login** (`gh auth login`) + aider + Copilot CLI |
 | **link**     | Symlinks `.zshrc`, WezTerm, Starship, `.gitconfig` (backs up existing) |
 
 The package list lives in [`Brewfile`](./Brewfile) — edit it and re-run, or
