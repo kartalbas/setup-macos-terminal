@@ -27,6 +27,7 @@ STEPS=(
   "cli|30-cli-tools.sh|Modern CLI tools (eza, bat, rg, fzf, lazygit...)"
   "devops|40-devops.sh|kubectl, argocd, vault, helm, k9s, terraform..."
   "agents|50-coding-agents.sh|Claude Code + runtimes (node, uv) — local"
+  "local-llm|60-local-llm.sh|(opt-in, ~30GB) Local coding LLM: Qwen3.6-27B MLX + Rapid-MLX + opencode"
   "link|90-link-configs.sh|Symlink dotfiles (backs up existing)"
 )
 
@@ -73,7 +74,10 @@ run_step() {
 
 run_group() {
   case "$1" in
-    all)    for s in "${STEPS[@]}"; do run_step "${s%%|*}"; done ;;
+    all)    for s in "${STEPS[@]}"; do
+              key="${s%%|*}"; [[ "$key" == "local-llm" ]] && continue
+              run_step "$key"
+            done ;;
     core)   for k in configure homebrew terminal shell cli link; do run_step "$k"; done ;;
     *)      run_step "$1" ;;
   esac
