@@ -29,11 +29,12 @@ _running_pid() {  # echoes live pid, or returns 1 (clearing a stale pidfile)
   rm -f "$PIDFILE"; return 1
 }
 
-_mem_gib() {  # $1=pid ; prefer phys_footprint (Activity-Monitor number), fallback rss
-  local pid="$1" kb
-  kb="$(/usr/bin/footprint -p "$pid" 2>/dev/null | awk -F'[^0-9]+' '/phys_footprint/{print $2; exit}')" || true
-  if [[ -n "${kb:-}" ]]; then awk -v k="$kb" 'BEGIN{printf "%.1f GiB", k/1024/1024}'; return; fi
-  kb="$(ps -o rss= -p "$pid" 2>/dev/null | tr -d ' ')"
+_mem_gib() {  # $1=pid ; phys_footprint in BYTES (Activity-Monitor number), fallback rss (KiB)
+  local pid="$1" bytes kb
+  # footprint's default output auto-scales units (MB/GB); force raw bytes.
+  bytes="$(/usr/bin/footprint -f bytes -p "$pid" 2>/dev/null | awk -F'[^0-9]+' '/phys_footprint/{print $2; exit}')" || true
+  if [[ -n "${bytes:-}" ]]; then awk -v b="$bytes" 'BEGIN{printf "%.1f GiB", b/1024/1024/1024}'; return; fi
+  kb="$(ps -o rss= -p "$pid" 2>/dev/null | tr -d ' ')"   # ps rss is KiB
   [[ -n "$kb" ]] && awk -v k="$kb" 'BEGIN{printf "%.1f GiB (rss)", k/1024/1024}' || printf '?'
 }
 

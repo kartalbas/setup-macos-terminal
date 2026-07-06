@@ -55,8 +55,18 @@ backup_path "$HOME/.config/opencode/opencode.json" "$ROOT"
 run ln -sfn "$ROOT/config/opencode/opencode.json" "$HOME/.config/opencode/opencode.json"
 ok "linked opencode.json → local Rapid-MLX endpoint (port 5413, 100k context)"
 
-# --- GPU wired-limit LaunchDaemon (sudo, interactive-only) --------------------
-if confirm "Raise GPU wired limit to 36 GiB and persist across reboots (needs sudo)?"; then
+# --- GPU wired-limit LaunchDaemon (sudo; explicit consent, never auto-yes) ----
+# Raw read (not confirm()) so --yes / ASSUME_YES cannot silently apply a
+# privileged, reboot-persistent change. Under --dry-run we show the actions.
+_do_wired=0
+if [[ "${DRY_RUN:-0}" == "1" ]]; then
+  _do_wired=1
+else
+  printf '%s' "Raise GPU wired limit to 36 GiB and persist across reboots (needs sudo)? [y/N] "
+  read -r _wired || true
+  if [[ "$_wired" =~ ^[Yy]$ ]]; then _do_wired=1; fi
+fi
+if [[ "$_do_wired" == "1" ]]; then
   run sudo cp "$PLIST_SRC" "$PLIST_DST"
   run sudo chown root:wheel "$PLIST_DST"
   run sudo chmod 0644 "$PLIST_DST"
