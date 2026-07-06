@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "local": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Rapid-MLX (local)",
+      "options": { "baseURL": "http://localhost:5413/v1" },
+      "models": { "unsloth/Qwen3.6-27B-UD-MLX-6bit": {} }
+    }
+  },
+  "model": "local/unsloth/Qwen3.6-27B-UD-MLX-6bit",
+  "limit": { "context": 100000 }
+}
