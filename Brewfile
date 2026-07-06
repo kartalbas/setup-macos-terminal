@@ -71,3 +71,9 @@ cask "google-cloud-sdk"          # Google → gcloud / gsutil / bq
 
 # ──────────── Container runtime (local Docker + k8s) ─────
 cask "orbstack"      # lightweight Docker Desktop alternative + local Kubernetes
+
+# ─────────────────── Local coding LLM (opt-in) ──────────
+# Installed only by `./install.sh local-llm` (never by `all`). opencode is the
+# terminal client; the Rapid-MLX runtime + hf downloader are Python CLIs installed
+# via `uv tool` inside scripts/60-local-llm.sh (uv tool install rapid-mlx huggingface_hub).
+brew "opencode"      # AI coding agent for the terminal → points at the local Rapid-MLX server

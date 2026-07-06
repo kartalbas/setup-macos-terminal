@@ -42,10 +42,25 @@ After it finishes, open a **new WezTerm window** (or `exec zsh`).
 | **cli**      | eza, bat, ripgrep, fd, fzf, zoxide, delta, lazygit, gh, tmux, jq, yq, btop, mise, **nvm**, node, uv… |
 | **devops**   | kubectl, kubectx, kubecolor, helm, k9s, stern, kustomize, argocd, vault, terraform, opentofu, sops, dive, OrbStack + cloud CLIs **aws / az / gcloud** |
 | **agents**   | **Claude Code** (native, in `~/.local/bin`), node/uv runtimes, optional **GitHub login** (`gh auth login`) + aider + Copilot CLI |
+| **local-llm** | *(opt-in, ~30 GB)* Local coding LLM — **Qwen3.6-27B** (6-bit MLX) served by **Rapid-MLX** + **opencode**, controlled with `llm start`/`llm stop` |
 | **link**     | Symlinks `.zshrc`, WezTerm, Starship, `.gitconfig` (backs up existing) |
 
 The package list lives in [`Brewfile`](./Brewfile) — edit it and re-run, or
 `brew bundle --file=Brewfile` directly.
+
+### Local coding LLM (opt-in)
+
+`./install.sh local-llm` installs a fully local coding model (Qwen3.6-27B, 6-bit
+MLX) served by Rapid-MLX and driven by opencode at 100k context. It is **not**
+part of `all`/`core` (it downloads ~30 GB and can raise the macOS GPU wired
+limit via `sudo`). After install:
+
+```bash
+llm start      # load the model, serve on http://localhost:5413/v1 (~33 GiB RAM)
+opencode       # in any project — uses the local model
+llm status     # running? how much RAM?
+llm stop       # unload and free the RAM
+```
 
 ---
 
