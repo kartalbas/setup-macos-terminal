@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# llm — control the local coding LLM (Rapid-MLX server); frees RAM on stop.
+#   llm start | stop | status | restart | logs
+set -euo pipefail
+
+MODEL="${LLM_MODEL:-$HOME/models/Qwen3.6-27B-UD-MLX-6bit}"
+PORT="${LLM_PORT:-5413}"
+GPU_UTIL="${LLM_GPU_UTIL:-0.75}"
+KV="${LLM_KV:-k8v4}"                 # k8v4 | v4 | none
+WIRED_MIN_MB=36864                   # LaunchDaemon should have set this
+STATE_DIR="$HOME/.local/state/llm"
+PIDFILE="$STATE_DIR/server.pid"
+LOG="$STATE_DIR/server.log"
+PROC_MATCH="rapid-mlx"               # substring to confirm PID identity (reuse guard)
+
+c_ok=$'\033[32m'; c_warn=$'\033[33m'; c_err=$'\033[31m'; c_dim=$'\033[2m'; c_rst=$'\033[0m'
+msg() { printf '%s\n' "$*"; }
+
+_alive() {  # $1=pid ; true if running AND its command matches PROC_MATCH
+  local pid="${1:-}"
+  [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null || return 1
+  ps -p "$pid" -o command= 2>/dev/null | grep -q "$PROC_MATCH"
+}
+
+_running_pid() {  # echoes live pid, or returns 1 (clearing a stale pidfile)
+  [[ -f "$PIDFILE" ]] || return 1
+  local pid; pid="$(cat "$PIDFILE" 2>/dev/null || true)"
+  if _alive "$pid"; then printf '%s' "$pid"; return 0; fi
+  rm -f "$PIDFILE"; return 1
+}
+
+_mem_gib() {  # $1=pid ; prefer phys_footprint (Activity-Monitor number), fallback rss
+  local pid="$1" kb
+  kb="$(/usr/bin/footprint -p "$pid" 2>/dev/null | awk -F'[^0-9]+' '/phys_footprint/{print $2; exit}')" || true
+  if [[ -n "${kb:-}" ]]; then awk -v k="$kb" 'BEGIN{printf "%.1f GiB", k/1024/1024}'; return; fi
+  kb="$(ps -o rss= -p "$pid" 2>/dev/null | tr -d ' ')"
+  [[ -n "$kb" ]] && awk -v k="$kb" 'BEGIN{printf "%.1f GiB (rss)", k/1024/1024}' || printf '?'
+}
+
+cmd_start() {
+  local pid
+  if pid="$(_running_pid)"; then
+    msg "${c_ok}already running${c_rst} (pid $pid) — http://localhost:$PORT/v1"; return 0
+  fi
+  local wired; wired="$(sysctl -n iogpu.wired_limit_mb 2>/dev/null || echo 0)"
+  if [[ "${wired:-0}" -lt "$WIRED_MIN_MB" ]]; then
+    msg "${c_warn}!${c_rst} GPU wired limit is ${wired} MiB (< ${WIRED_MIN_MB}); LaunchDaemon not active?"
+    msg "  ${c_dim}sudo sysctl -w iogpu.wired_limit_mb=${WIRED_MIN_MB}${c_rst}"
+  fi
+  [[ -e "$MODEL" ]] || { msg "${c_err}✗${c_rst} model not found: $MODEL"; return 1; }
+  command -v rapid-mlx >/dev/null || { msg "${c_err}✗${c_rst} rapid-mlx not on PATH"; return 1; }
+  mkdir -p "$STATE_DIR"
+  msg "starting rapid-mlx (model loads ~33 GiB)…"
+  nohup rapid-mlx serve "$MODEL" \
+      --port "$PORT" \
+      --kv-cache-turboquant "$KV" \
+      --gpu-memory-utilization "$GPU_UTIL" \
+      >"$LOG" 2>&1 &
+  echo $! > "$PIDFILE"
+  msg "  pid $(cat "$PIDFILE") · logs: ${c_dim}llm logs${c_rst} · check: ${c_dim}llm status${c_rst}"
+}
+
+cmd_stop() {
+  local pid
+  if ! pid="$(_running_pid)"; then msg "not running"; return 0; fi
+  msg "stopping (pid $pid)…"
+  kill "$pid" 2>/dev/null || true
+  local i
+  for i in $(seq 1 20); do _alive "$pid" || break; sleep 0.5; done
+  if _alive "$pid"; then msg "${c_warn}!${c_rst} unresponsive → SIGKILL"; kill -9 "$pid" 2>/dev/null || true; sleep 1; fi
+  rm -f "$PIDFILE"
+  msg "${c_ok}stopped — RAM freed${c_rst}"
+}
+
+cmd_status() {
+  local pid
+  if pid="$(_running_pid)"; then
+    msg "${c_ok}running${c_rst} (pid $pid) · mem $(_mem_gib "$pid") · http://localhost:$PORT/v1"
+  else
+    msg "${c_dim}stopped (0 GiB)${c_rst}"
+  fi
+}
+
+case "${1:-status}" in
+  start)   cmd_start ;;
+  stop)    cmd_stop ;;
+  status)  cmd_status ;;
+  restart) cmd_stop; sleep 1; cmd_start ;;
+  logs)    tail -f "$LOG" ;;
+  *)       msg "usage: llm {start|stop|status|restart|logs}"; exit 2 ;;
+esac
