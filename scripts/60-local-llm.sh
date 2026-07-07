@@ -51,15 +51,17 @@ run cp "$ROOT/bin/llm" "$LLM_HOME/llm"
 run chmod +x "$LLM_HOME/llm"
 run cp "$ROOT/config/opencode/opencode.json" "$LLM_HOME/opencode.json"
 
-# --- Minimal external pointers (unavoidable) ----------------------------------
+# --- Deploy: llm on PATH (symlink), opencode config as a COPY -----------------
 # 1) llm on PATH (~/.local/bin is already on PATH)
 run mkdir -p "$HOME/.local/bin"
 run ln -sfn "$LLM_HOME/llm" "$HOME/.local/bin/llm"
-# 2) opencode reads its global config only from ~/.config/opencode
+# 2) opencode reads its config only from ~/.config/opencode. Keep the editable
+#    source in ~/llm/opencode.json and deploy a COPY; `llm sync` (and `llm start`)
+#    re-copy it after you edit the local file.
 run mkdir -p "$HOME/.config/opencode"
 backup_path "$HOME/.config/opencode/opencode.json" "$ROOT"
-run ln -sfn "$LLM_HOME/opencode.json" "$HOME/.config/opencode/opencode.json"
-ok "linked llm → PATH and opencode.json → ~/.config/opencode"
+run cp "$LLM_HOME/opencode.json" "$HOME/.config/opencode/opencode.json"
+ok "llm → PATH; opencode config copied (edit $LLM_HOME/opencode.json, then 'llm sync')"
 
 # --- Model weights (~30 GB, idempotent) into ~/llm/models ---------------------
 if [[ -d "$MODEL_DIR" && -n "$(ls -A "$MODEL_DIR" 2>/dev/null)" ]]; then
@@ -76,6 +78,6 @@ info "(needs sudo, resets on reboot):  sudo sysctl -w iogpu.wired_limit_mb=36864
 step "local-llm summary — everything under $LLM_HOME"
 ok   "runtime : $VENV/bin/rapid-mlx"
 ok   "model   : $MODEL_DIR"
-ok   "config  : $LLM_HOME/opencode.json  (linked into ~/.config/opencode)"
+ok   "config  : $LLM_HOME/opencode.json  (copied to ~/.config/opencode; 'llm sync' to re-deploy)"
 ok   "control : llm start | llm status | llm stop"
 info "Start the server (${C_BOLD}llm start${C_RESET}), then run ${C_BOLD}opencode${C_RESET} in a project."

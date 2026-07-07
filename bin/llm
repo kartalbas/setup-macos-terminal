@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # llm — control the local coding LLM (Rapid-MLX server); frees RAM on stop.
-# Fully self-contained under ~/llm.   llm start | stop | status | restart | logs
+# Fully self-contained under ~/llm.   llm start | stop | status | restart | sync | logs
 set -euo pipefail
 
 LLM_HOME="${LLM_HOME:-$HOME/llm}"
@@ -15,8 +15,21 @@ PIDFILE="$STATE_DIR/server.pid"
 LOG="$STATE_DIR/server.log"
 PROC_MATCH="rapid-mlx"               # substring to confirm PID identity (reuse guard)
 
+# opencode config: the local file is the source of truth; we copy it to the
+# location opencode reads from, so edits deploy automatically on `sync`/`start`.
+OPENCODE_CFG_SRC="${LLM_OPENCODE_CFG:-$LLM_HOME/opencode.json}"
+OPENCODE_CFG_DST="$HOME/.config/opencode/opencode.json"
+
 c_ok=$'\033[32m'; c_warn=$'\033[33m'; c_err=$'\033[31m'; c_dim=$'\033[2m'; c_rst=$'\033[0m'
 msg() { printf '%s\n' "$*"; }
+
+_sync_config() {  # copy the local opencode config to opencode's config location
+  [[ -f "$OPENCODE_CFG_SRC" ]] || { msg "${c_warn}!${c_rst} no config at $OPENCODE_CFG_SRC"; return 0; }
+  mkdir -p "$(dirname "$OPENCODE_CFG_DST")"
+  if cmp -s "$OPENCODE_CFG_SRC" "$OPENCODE_CFG_DST" 2>/dev/null; then return 0; fi
+  cp "$OPENCODE_CFG_SRC" "$OPENCODE_CFG_DST"
+  msg "${c_dim}synced config → $OPENCODE_CFG_DST${c_rst}"
+}
 
 _alive() {  # $1=pid ; true if running AND its command matches PROC_MATCH
   local pid="${1:-}"
@@ -41,6 +54,7 @@ _mem_gib() {  # $1=pid ; phys_footprint in BYTES (Activity-Monitor number), fall
 }
 
 cmd_start() {
+  _sync_config   # always deploy the latest local config before serving
   local pid
   if pid="$(_running_pid)"; then
     msg "${c_ok}already running${c_rst} (pid $pid) — http://localhost:$PORT/v1"; return 0
@@ -89,6 +103,7 @@ case "${1:-status}" in
   stop)    cmd_stop ;;
   status)  cmd_status ;;
   restart) cmd_stop; sleep 1; cmd_start ;;
+  sync)    _sync_config; msg "${c_ok}config deployed${c_rst} ($OPENCODE_CFG_SRC → $OPENCODE_CFG_DST)" ;;
   logs)    tail -f "$LOG" ;;
-  *)       msg "usage: llm {start|stop|status|restart|logs}"; exit 2 ;;
+  *)       msg "usage: llm {start|stop|status|restart|sync|logs}"; exit 2 ;;
 esac
