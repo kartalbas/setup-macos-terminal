@@ -52,8 +52,12 @@ The package list lives in [`Brewfile`](./Brewfile) — edit it and re-run, or
 
 `./install.sh local-llm` installs a fully local coding model (Qwen3.6-27B, 6-bit
 MLX) served by Rapid-MLX and driven by opencode at 100k context. It is **not**
-part of `all`/`core` (it downloads ~30 GB and can raise the macOS GPU wired
-limit via `sudo`). After install:
+part of `all`/`core` (it downloads ~30 GB). **Everything lives in `~/llm/`** — a
+self-contained Python venv (`~/llm/venv`), the model (`~/llm/models/…`), the
+config (`~/llm/opencode.json`), the control script (`~/llm/llm`) and runtime
+state (`~/llm/state/`). Only two symlinks point outside: `~/.local/bin/llm` (so
+`llm` is on `PATH`) and `~/.config/opencode/opencode.json` (opencode's fixed
+config path). After install:
 
 ```bash
 llm start      # load the model, serve on http://localhost:5413/v1 (~33 GiB RAM)
@@ -61,6 +65,9 @@ opencode       # in any project — uses the local model
 llm status     # running? how much RAM?
 llm stop       # unload and free the RAM
 ```
+
+For very long contexts you can optionally raise the macOS GPU wired limit
+(needs `sudo`, resets on reboot): `sudo sysctl -w iogpu.wired_limit_mb=36864`.
 
 ---
 
@@ -130,9 +137,7 @@ setup-macos-terminal/
 │   └── git/gitconfig.example   # the ONLY template (user-specific: name/email)
 ├── generated/              # your rendered gitconfig (git-ignored, per-machine)
 └── docs/
-    ├── SHORTCUTS.md        # Windows-Terminal-style keybindings
-    ├── TOOLS.md            # what every tool is + how to start
-    └── TROUBLESHOOTING.md
+    └── README.md           # one-page guide: tools, shortcuts, local LLM, troubleshooting
 ```
 
 ---
@@ -150,5 +155,5 @@ setup-macos-terminal/
 - **Local-first agents.** Claude Code is installed natively to `~/.local/bin`
   with its runtimes; nothing depends on a remote box.
 
-See [`docs/SHORTCUTS.md`](./docs/SHORTCUTS.md) to learn the keys, and
-[`docs/TROUBLESHOOTING.md`](./docs/TROUBLESHOOTING.md) if something looks off.
+See the one-page [`docs/README.md`](./docs/README.md) for tools, keyboard
+shortcuts, the local LLM, and troubleshooting.

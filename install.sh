@@ -133,7 +133,7 @@ main() {
   step "Done"
   ok "Setup finished."
   info "Open a new ${C_BOLD}WezTerm${C_RESET} window (or run: ${C_BOLD}exec zsh${C_RESET}) to load everything."
-  info "Shortcuts & tips: ${C_BOLD}docs/SHORTCUTS.md${C_RESET}  •  Tools: ${C_BOLD}docs/TOOLS.md${C_RESET}"
+  info "Guide (tools, shortcuts, local LLM, troubleshooting): ${C_BOLD}docs/README.md${C_RESET}"
 }
 
 main "$@"

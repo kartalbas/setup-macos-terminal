@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 # llm — control the local coding LLM (Rapid-MLX server); frees RAM on stop.
-#   llm start | stop | status | restart | logs
+# Fully self-contained under ~/llm.   llm start | stop | status | restart | logs
 set -euo pipefail
 
-MODEL="${LLM_MODEL:-$HOME/models/Qwen3.6-27B-UD-MLX-6bit}"
+LLM_HOME="${LLM_HOME:-$HOME/llm}"
+MODEL="${LLM_MODEL:-$LLM_HOME/models/Qwen3.6-27B-UD-MLX-6bit}"
+RAPID_MLX="${LLM_RAPID_MLX:-$LLM_HOME/venv/bin/rapid-mlx}"
 PORT="${LLM_PORT:-5413}"
 GPU_UTIL="${LLM_GPU_UTIL:-0.75}"
 KV="${LLM_KV:-k8v4}"                 # k8v4 | v4 | none
-WIRED_MIN_MB=36864                   # LaunchDaemon should have set this
-STATE_DIR="$HOME/.local/state/llm"
+WIRED_MIN_MB=36864                   # optional headroom for long contexts
+STATE_DIR="$LLM_HOME/state"
 PIDFILE="$STATE_DIR/server.pid"
 LOG="$STATE_DIR/server.log"
 PROC_MATCH="rapid-mlx"               # substring to confirm PID identity (reuse guard)
@@ -44,15 +46,15 @@ cmd_start() {
     msg "${c_ok}already running${c_rst} (pid $pid) — http://localhost:$PORT/v1"; return 0
   fi
   local wired; wired="$(sysctl -n iogpu.wired_limit_mb 2>/dev/null || echo 0)"
-  if [[ "${wired:-0}" -lt "$WIRED_MIN_MB" ]]; then
-    msg "${c_warn}!${c_rst} GPU wired limit is ${wired} MiB (< ${WIRED_MIN_MB}); LaunchDaemon not active?"
+  if [[ "${wired:-0}" != "0" && "${wired:-0}" -lt "$WIRED_MIN_MB" ]]; then
+    msg "${c_warn}!${c_rst} GPU wired limit is ${wired} MiB. For very long contexts raise it (optional):"
     msg "  ${c_dim}sudo sysctl -w iogpu.wired_limit_mb=${WIRED_MIN_MB}${c_rst}"
   fi
   [[ -e "$MODEL" ]] || { msg "${c_err}✗${c_rst} model not found: $MODEL"; return 1; }
-  command -v rapid-mlx >/dev/null || { msg "${c_err}✗${c_rst} rapid-mlx not on PATH"; return 1; }
+  [[ -x "$RAPID_MLX" ]] || { msg "${c_err}✗${c_rst} rapid-mlx not found at $RAPID_MLX — run ./install.sh local-llm"; return 1; }
   mkdir -p "$STATE_DIR"
   msg "starting rapid-mlx (model loads ~33 GiB)…"
-  nohup rapid-mlx serve "$MODEL" \
+  nohup "$RAPID_MLX" serve "$MODEL" \
       --port "$PORT" \
       --kv-cache-turboquant "$KV" \
       --gpu-memory-utilization "$GPU_UTIL" \
