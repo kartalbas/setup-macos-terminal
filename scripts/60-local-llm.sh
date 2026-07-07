@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # 60-local-llm.sh — opt-in local coding LLM, fully self-contained under ~/llm.
 # Everything (Python venv with Rapid-MLX + hf, the Qwen3.6-27B 6-bit model, the
-# opencode config, the control script, runtime state) lives in ~/llm. Only two
-# tiny symlinks point outside: ~/.local/bin/llm (PATH) and the opencode config.
+# opencode config, the control script, runtime state) lives in ~/llm and is run
+# from there (~/llm/llm …). The ONLY file placed outside is the opencode config
+# copy at ~/.config/opencode (opencode reads its config only from there).
 # opencode (the client) comes from Homebrew. Heavy (~30 GB download); run
 # explicitly: ./install.sh local-llm
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/common.sh"
@@ -51,17 +52,14 @@ run cp "$ROOT/bin/llm" "$LLM_HOME/llm"
 run chmod +x "$LLM_HOME/llm"
 run cp "$ROOT/config/opencode/opencode.json" "$LLM_HOME/opencode.json"
 
-# --- Deploy: llm on PATH (symlink), opencode config as a COPY -----------------
-# 1) llm on PATH (~/.local/bin is already on PATH)
-run mkdir -p "$HOME/.local/bin"
-run ln -sfn "$LLM_HOME/llm" "$HOME/.local/bin/llm"
-# 2) opencode reads its config only from ~/.config/opencode. Keep the editable
-#    source in ~/llm/opencode.json and deploy a COPY; `llm sync` (and `llm start`)
-#    re-copy it after you edit the local file.
+# --- Deploy the opencode config (the ONE unavoidable external file) -----------
+# Nothing else leaves ~/llm — run the control script as ~/llm/llm. opencode only
+# ever reads its config from ~/.config/opencode, so we copy it there; edit
+# ~/llm/opencode.json and `~/llm/llm sync` (or `start`) re-copies it.
 run mkdir -p "$HOME/.config/opencode"
 backup_path "$HOME/.config/opencode/opencode.json" "$ROOT"
 run cp "$LLM_HOME/opencode.json" "$HOME/.config/opencode/opencode.json"
-ok "llm → PATH; opencode config copied (edit $LLM_HOME/opencode.json, then 'llm sync')"
+ok "opencode config deployed (edit $LLM_HOME/opencode.json, then '$LLM_HOME/llm sync')"
 
 # --- Model weights (~30 GB, idempotent) into ~/llm/models ---------------------
 if [[ -d "$MODEL_DIR" && -n "$(ls -A "$MODEL_DIR" 2>/dev/null)" ]]; then
@@ -78,6 +76,6 @@ info "(needs sudo, resets on reboot):  sudo sysctl -w iogpu.wired_limit_mb=36864
 step "local-llm summary — everything under $LLM_HOME"
 ok   "runtime : $VENV/bin/rapid-mlx"
 ok   "model   : $MODEL_DIR"
-ok   "config  : $LLM_HOME/opencode.json  (copied to ~/.config/opencode; 'llm sync' to re-deploy)"
-ok   "control : llm start | llm status | llm stop"
-info "Start the server (${C_BOLD}llm start${C_RESET}), then run ${C_BOLD}opencode${C_RESET} in a project."
+ok   "config  : $LLM_HOME/opencode.json  (copied to ~/.config/opencode; '~/llm/llm sync' to re-deploy)"
+ok   "control : run it from ~/llm — ${C_BOLD}~/llm/llm start | status | stop | sync${C_RESET}"
+info "Start it: ${C_BOLD}cd $LLM_HOME && ./llm start${C_RESET}   then run ${C_BOLD}opencode${C_RESET} in a project."

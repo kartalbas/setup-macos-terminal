@@ -118,18 +118,20 @@ An **opt-in**, fully offline coding model driven by **opencode**. Install with `
 ├── models/Qwen3.6-27B-UD-MLX-6bit/  # the model (~30 GB)
 └── state/{server.pid,server.log}    # runtime state
 ```
-Only one symlink points outside `~/llm`: `~/.local/bin/llm` (so `llm` is on `PATH`). The opencode config is **not** symlinked — you edit `~/llm/opencode.json` and `llm sync` (or `llm start`) copies it to opencode's fixed path (`~/.config/opencode/opencode.json`). opencode itself is a Homebrew formula.
+**Nothing runs outside `~/llm`** — invoke the control script directly as `~/llm/llm …` (or `cd ~/llm && ./llm …`). The **only** file placed outside is the opencode config copy at `~/.config/opencode/opencode.json` — opencode reads its config only from there. Edit `~/llm/opencode.json` and `~/llm/llm sync` (or `start`) re-copies it. opencode itself is a Homebrew formula.
 
 ### Use it
 ```bash
-llm start      # deploy config, load the model, serve on :5413 (~33 GiB RAM)
-opencode       # in any project — uses the local model
-llm status     # running? how much RAM?
-llm sync       # (re)copy ~/llm/opencode.json → ~/.config/opencode after an edit
-llm stop       # unload and free the RAM
-llm logs       # tail the server log
-llm restart
+~/llm/llm start    # deploy config, load the model, serve on :5413 (~33 GiB RAM)
+opencode           # in any project — uses the local model
+~/llm/llm status   # running? how much RAM?
+~/llm/llm sync     # (re)copy ~/llm/opencode.json → ~/.config/opencode after an edit
+~/llm/llm stop     # unload and free the RAM
+~/llm/llm logs     # tail the server log
+~/llm/llm restart
 ```
+Prefer a short `llm`? `cd ~/llm && ./llm start`, or add your own alias — the
+installer doesn't put anything on your `PATH`.
 
 ### Tune it (env vars, read by `~/llm/llm`)
 | Variable | Default | Meaning |
