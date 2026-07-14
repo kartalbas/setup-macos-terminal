@@ -47,6 +47,7 @@ brew "nvm"           # Node Version Manager — per-project node versions
 brew "node"          # runtime for Claude Code MCP servers & JS tooling
 brew "uv"            # fast Python package/runtime manager (+ uv tool)
 brew "pipx"          # isolated installs of Python CLI apps
+cask "flutter"       # Flutter SDK — mobile / web / desktop UI toolkit (flutter CLI)
 
 # ──────────────── DevOps / Cloud-Native ─────────────────
 brew "kubernetes-cli"            # kubectl

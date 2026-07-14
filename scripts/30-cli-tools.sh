@@ -17,6 +17,14 @@ for f in "${CLI_FORMULAE[@]}"; do
   fi
 done
 
+# Flutter SDK (cask) — UI toolkit for mobile / web / desktop
+if brew_has_cask flutter; then
+  skip "flutter"
+else
+  info "Installing Flutter SDK..."; run brew install --cask flutter
+  info "Verify your toolchain later with: flutter doctor"
+fi
+
 # nvm needs its working dir to exist; the ~/.zshrc sources it from there.
 run mkdir -p "$HOME/.nvm"
 

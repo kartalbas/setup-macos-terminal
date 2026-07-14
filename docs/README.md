@@ -44,6 +44,7 @@ What's installed and how to start it.
 | **node** | JS runtime (Claude Code MCP, tooling) | `node -v` |
 | **uv** | Fast Python pkg/runtime manager | `uv venv && uv pip install …` |
 | **pipx** | Isolated Python CLI apps | `pipx list` |
+| **Flutter** | UI toolkit SDK (mobile/web/desktop) | `flutter doctor` |
 
 ### DevOps / cloud-native
 | Tool | What it is | Try |
