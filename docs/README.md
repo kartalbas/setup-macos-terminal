@@ -46,6 +46,7 @@ What's installed and how to start it.
 | **uv** | Fast Python pkg/runtime manager | `uv venv && uv pip install …` |
 | **pipx** | Isolated Python CLI apps | `pipx list` |
 | **Flutter** | UI toolkit SDK (mobile/web/desktop) | `flutter doctor` |
+| **CocoaPods** | iOS/macOS dependency manager (Flutter iOS) | `pod --version` |
 
 ### DevOps / cloud-native
 | Tool | What it is | Try |

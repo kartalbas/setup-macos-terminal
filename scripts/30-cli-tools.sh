@@ -9,6 +9,7 @@ CLI_FORMULAE=(
   eza bat ripgrep fd fzf zoxide git-delta lazygit gh tmux
   jq yq tree wget htop btop tldr fastfetch
   mise nvm node uv pipx
+  cocoapods
 )
 
 for f in "${CLI_FORMULAE[@]}"; do

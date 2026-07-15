@@ -39,7 +39,7 @@ After it finishes, open a **new WezTerm window** (or `exec zsh`).
 | **homebrew** | Homebrew + Xcode Command Line Tools |
 | **terminal** | WezTerm + Cascadia (CaskaydiaCove) & JetBrains Mono Nerd Fonts + Microsoft Edge + JetBrains Toolbox |
 | **shell**    | Starship prompt, zsh autosuggestions / syntax-highlighting / completions, **PowerShell (pwsh)** |
-| **cli**      | eza, bat, ripgrep, fd, fzf, zoxide, delta, lazygit, gh, tmux, jq, yq, btop, mise, **nvm**, node, uv, **Flutter**… |
+| **cli**      | eza, bat, ripgrep, fd, fzf, zoxide, delta, lazygit, gh, tmux, jq, yq, btop, mise, **nvm**, node, uv, **Flutter**, cocoapods… |
 | **devops**   | kubectl, kubectx, kubecolor, helm, k9s, stern, kustomize, argocd, vault, terraform, opentofu, sops, dive, OrbStack + cloud CLIs **aws / az / gcloud** |
 | **agents**   | **Claude Code** (native, in `~/.local/bin`), node/uv runtimes, optional **GitHub login** (`gh auth login`) + aider + Copilot CLI |
 | **local-llm** | *(opt-in, ~30 GB)* Local coding LLM — **Qwen3.6-27B** (6-bit MLX) served by **Rapid-MLX** + **opencode**, controlled with `llm start`/`llm stop` |
