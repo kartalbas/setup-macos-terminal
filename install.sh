@@ -6,7 +6,7 @@
 #   ./install.sh core            homebrew + terminal + shell + cli tools
 #   ./install.sh devops          kubectl, argocd, vault, helm, k9s, terraform...
 #   ./install.sh agents          Claude Code + runtimes (node, uv) — all local
-#   ./install.sh link            symlink dotfiles (.zshrc, wezterm, starship, git)
+#   ./install.sh link            copy configs into place (.zshrc, wezterm, starship, git)
 #   ./install.sh <step-name>     run a single step (see list below)
 #
 # Flags (can combine):
@@ -28,7 +28,7 @@ STEPS=(
   "devops|40-devops.sh|kubectl, argocd, vault, helm, k9s, terraform..."
   "agents|50-coding-agents.sh|Claude Code + runtimes (node, uv) — local"
   "local-llm|60-local-llm.sh|(opt-in, ~30GB) Local coding LLM: Qwen3.6-27B MLX + Rapid-MLX + opencode"
-  "link|90-link-configs.sh|Symlink dotfiles (backs up existing)"
+  "link|90-link-configs.sh|Copy configs into place — independent of this repo"
 )
 
 usage() {

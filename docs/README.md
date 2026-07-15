@@ -208,12 +208,12 @@ curl -fsSL https://claude.ai/install.sh | bash   # (re)install / claude update
 The only personal data. Re-run the wizard and re-link:
 ```bash
 ./install.sh configure          # re-answer name & email
-./install.sh link               # re-render generated/gitconfig, then symlink
+./install.sh link               # re-render generated/gitconfig, then copy into place
 ```
 `config/git/gitconfig.example` feeds the wizard, which renders the git-ignored `generated/gitconfig`.
 
 ### Change a tooling config (font, colors, prompt, aliases…)
-WezTerm, Starship and zsh are standard configs in `config/`, symlinked into place. Edit them directly — changes take effect on the next new window / `exec zsh`.
+WezTerm, Starship and zsh are **copied** to their destinations on install (not symlinked). After install, edit the deployed file directly (e.g. `~/.config/wezterm/wezterm.lua`, `~/.zshrc`) — the repo is only the installer and can be deleted. Changes take effect on the next new window / `exec zsh`.
 
 ### Restore a backup / re-run one step
 The `link` step backs up originals (`~/.zshrc.backup.*`, `~/.gitconfig.backup.*`). Everything is idempotent:

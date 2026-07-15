@@ -43,7 +43,7 @@ After it finishes, open a **new WezTerm window** (or `exec zsh`).
 | **devops**   | kubectl, kubectx, kubecolor, helm, k9s, stern, kustomize, argocd, vault, terraform, opentofu, sops, dive, OrbStack + cloud CLIs **aws / az / gcloud** |
 | **agents**   | **Claude Code** (native, in `~/.local/bin`), node/uv runtimes, optional **GitHub login** (`gh auth login`) + aider + Copilot CLI |
 | **local-llm** | *(opt-in, ~30 GB)* Local coding LLM — **Qwen3.6-27B** (6-bit MLX) served by **Rapid-MLX** + **opencode**, controlled with `llm start`/`llm stop` |
-| **link**     | Symlinks `.zshrc`, WezTerm, Starship, `.gitconfig` (backs up existing) |
+| **link**     | Copies `.zshrc`, WezTerm, Starship, `.gitconfig` into place — real files, independent of this repo (backs up existing) |
 
 The package list lives in [`Brewfile`](./Brewfile) — edit it and re-run, or
 `brew bundle --file=Brewfile` directly.
@@ -78,7 +78,7 @@ This repo is **public**, so the rule is simple:
 - **Tooling configs are the committed default.** WezTerm, Starship and zsh live
   in [`config/`](./config) as plain, standard config files. They contain no
   personal data, so they're checked into git and used as-is during install —
-  the **link** step symlinks them straight into place. No tokens, no rendering.
+  the **link** step copies them straight into place. No tokens, no rendering.
 - **Only your git identity is personal.** `config/git/gitconfig.example` is the
   one template, carrying `__GIT_NAME__` / `__GIT_EMAIL__`. Everything else in
   that file (delta diffs, aliases, keychain credential helper…) is standard.
@@ -108,9 +108,10 @@ git-ignored). To change them later, re-run `./install.sh configure` (or edit
 **HTTPS git auth** uses the macOS Keychain (`credential.helper = osxkeychain`),
 so you authenticate once and aren't prompted again.
 
-The **link** step symlinks everything into place: `~/.zshrc`,
-`~/.config/wezterm/wezterm.lua`, `~/.config/starship.toml` (from `config/`), and
-`~/.gitconfig` (from `generated/`).
+The **link** step copies everything into place as real, independent files:
+`~/.zshrc`, `~/.config/wezterm/wezterm.lua`, `~/.config/starship.toml` (from
+`config/`), and `~/.gitconfig` (from `generated/`). Nothing symlinks back here —
+you can delete this repo after install.
 
 ---
 
@@ -130,7 +131,7 @@ setup-macos-terminal/
 │   ├── 40-devops.sh
 │   ├── 50-coding-agents.sh
 │   └── 90-link-configs.sh
-├── config/                 # standard configs, committed + linked as-is
+├── config/                 # standard configs, committed + copied on install
 │   ├── wezterm/wezterm.lua
 │   ├── starship/starship.toml
 │   ├── zsh/zshrc
@@ -146,10 +147,11 @@ setup-macos-terminal/
 
 - **Idempotent.** Every step checks before it installs; re-running is safe and
   fast. Already-installed packages are skipped, not reinstalled.
-- **Safe linking.** Existing `~/.zshrc` etc. are moved to
-  `*.backup.<timestamp>` before a symlink replaces them. Your current
-  `export PATH="$HOME/.local/bin:$PATH"` (for Claude Code) is preserved in the
-  managed `.zshrc`.
+- **Independent copies, not symlinks.** Configs are **copied** to their
+  destinations as real files, so `setup-macos-terminal` is only an installer —
+  delete it afterwards and everything keeps working. Existing files are moved to
+  `*.backup.<timestamp>` first (an old symlink from a previous install is
+  replaced by a copy).
 - **Modular.** Run one step or all. Each `scripts/*.sh` works standalone.
 - **Dry-run + non-interactive.** `--dry-run` previews; `--yes` automates.
 - **Local-first agents.** Claude Code is installed natively to `~/.local/bin`
