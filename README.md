@@ -37,7 +37,7 @@ After it finishes, open a **new WezTerm window** (or `exec zsh`).
 |------|----------|
 | **configure** | Asks your git identity (the only personal data) → renders `generated/gitconfig` (see below) |
 | **homebrew** | Homebrew + Xcode Command Line Tools |
-| **terminal** | WezTerm + Cascadia (CaskaydiaCove) & JetBrains Mono Nerd Fonts + Microsoft Edge |
+| **terminal** | WezTerm + Cascadia (CaskaydiaCove) & JetBrains Mono Nerd Fonts + Microsoft Edge + JetBrains Toolbox |
 | **shell**    | Starship prompt, zsh autosuggestions / syntax-highlighting / completions, **PowerShell (pwsh)** |
 | **cli**      | eza, bat, ripgrep, fd, fzf, zoxide, delta, lazygit, gh, tmux, jq, yq, btop, mise, **nvm**, node, uv, **Flutter**… |
 | **devops**   | kubectl, kubectx, kubecolor, helm, k9s, stern, kustomize, argocd, vault, terraform, opentofu, sops, dive, OrbStack + cloud CLIs **aws / az / gcloud** |

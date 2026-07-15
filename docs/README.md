@@ -18,6 +18,7 @@ What's installed and how to start it.
 | **zsh-syntax-highlighting** | Colors commands as you type | invalid commands turn red |
 | **PowerShell** | Cross-platform shell (`pwsh`) | `pwsh` |
 | **Microsoft Edge** | Browser | open from Spotlight |
+| **JetBrains Toolbox** | Installs/updates JetBrains IDEs | open from Spotlight |
 
 ### Modern CLI
 | Tool | Replaces | Try |

@@ -11,8 +11,9 @@ cask "wezterm"                              # GPU terminal; same app + config on
 cask "font-caskaydia-cove-nerd-font"        # Cascadia Code + glyphs (Windows Terminal's font)
 cask "font-jetbrains-mono-nerd-font"        # great alternative coding font
 
-# ───────────────────────── Browser ──────────────────────
+# ─────────────────────── GUI apps ───────────────────────
 cask "microsoft-edge"                       # Microsoft Edge browser
+cask "jetbrains-toolbox"                     # JetBrains IDE manager (Toolbox)
 
 # ───────────────────── Shell & Prompt ───────────────────
 brew "starship"                  # fast, informative cross-shell prompt
