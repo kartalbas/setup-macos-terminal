@@ -1,17 +1,11 @@
-# Clean, developer-focused prompt.
-# Shows: path, git branch/status, language versions, k8s context, exit status.
+# Minimal, git-only prompt.
+# Shows: git branch/status and the input character — nothing else.
 
 add_newline = true
 command_timeout = 1000
 
 format = """
-$directory\
 $git_branch$git_status\
-$nodejs$python$golang$rust$java\
-$kubernetes\
-$terraform\
-$cmd_duration\
-$line_break\
 $character"""
 
 [character]
