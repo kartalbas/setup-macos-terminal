@@ -42,32 +42,10 @@ After it finishes, open a **new WezTerm window** (or `exec zsh`).
 | **cli**      | eza, bat, ripgrep, fd, fzf, zoxide, delta, lazygit, gh, tmux, jq, yq, btop, mise, **nvm**, node, uv, **Flutter**, cocoapods… |
 | **devops**   | kubectl, kubectx, kubecolor, helm, k9s, stern, kustomize, argocd, vault, terraform, opentofu, sops, dive, OrbStack + cloud CLIs **aws / az / gcloud** |
 | **agents**   | **Claude Code** (native, in `~/.local/bin`), node/uv runtimes, optional **GitHub login** (`gh auth login`) + aider + Copilot CLI |
-| **local-llm** | *(opt-in, ~30 GB)* Local coding LLM — **Qwen3.6-27B** (6-bit MLX) served by **Rapid-MLX** + **opencode**, controlled with `llm start`/`llm stop` |
 | **link**     | Copies `.zshrc`, WezTerm, Starship, `.gitconfig` into place — real files, independent of this repo (backs up existing) |
 
 The package list lives in [`Brewfile`](./Brewfile) — edit it and re-run, or
 `brew bundle --file=Brewfile` directly.
-
-### Local coding LLM (opt-in)
-
-`./install.sh local-llm` installs a fully local coding model (Qwen3.6-27B, 6-bit
-MLX) served by Rapid-MLX and driven by opencode at 100k context. It is **not**
-part of `all`/`core` (it downloads ~30 GB). **Everything lives in `~/llm/`** — a
-self-contained Python venv (`~/llm/venv`), the model (`~/llm/models/…`), the
-config (`~/llm/opencode.json`), the control script (`~/llm/llm`) and runtime
-state (`~/llm/state/`). Only two symlinks point outside: `~/.local/bin/llm` (so
-`llm` is on `PATH`) and `~/.config/opencode/opencode.json` (opencode's fixed
-config path). After install:
-
-```bash
-llm start      # load the model, serve on http://localhost:5413/v1 (~33 GiB RAM)
-opencode       # in any project — uses the local model
-llm status     # running? how much RAM?
-llm stop       # unload and free the RAM
-```
-
-For very long contexts you can optionally raise the macOS GPU wired limit
-(needs `sudo`, resets on reboot): `sudo sysctl -w iogpu.wired_limit_mb=36864`.
 
 ---
 
@@ -138,7 +116,7 @@ setup-macos-terminal/
 │   └── git/gitconfig.example   # the ONLY template (user-specific: name/email)
 ├── generated/              # your rendered gitconfig (git-ignored, per-machine)
 └── docs/
-    └── README.md           # one-page guide: tools, shortcuts, local LLM, troubleshooting
+    └── README.md           # one-page guide: tools, shortcuts, troubleshooting
 ```
 
 ---
@@ -158,4 +136,4 @@ setup-macos-terminal/
   with its runtimes; nothing depends on a remote box.
 
 See the one-page [`docs/README.md`](./docs/README.md) for tools, keyboard
-shortcuts, the local LLM, and troubleshooting.
+shortcuts, and troubleshooting.

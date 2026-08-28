@@ -1,7 +1,7 @@
 # Guide
 
 Everything you need after running the installer, in one page:
-[Tools](#tools) · [Shortcuts](#shortcuts) · [Local coding LLM](#local-coding-llm) · [Troubleshooting](#troubleshooting)
+[Tools](#tools) · [Shortcuts](#shortcuts) · [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -70,7 +70,6 @@ What's installed and how to start it.
 | Tool | What it is | Try |
 |------|-----------|-----|
 | **Claude Code** | Anthropic's agentic CLI, in `~/.local/bin` | `claude` in a project |
-| **opencode** | Terminal coding agent (drives the [local LLM](#local-coding-llm)) | `opencode` |
 | `aider` *(optional)* | Python pair-programming agent | `aider` |
 | `gh copilot` *(optional)* | Copilot CLI (gh extension) | `gh copilot suggest "…"` |
 
@@ -100,76 +99,6 @@ WezTerm tuned to feel like Windows Terminal (`Ctrl` / `Ctrl+Shift`). Configured 
 | `Ctrl+R` / `Ctrl+T` / `Alt+C` | fzf: history / file / cd (from zsh + fzf) |
 | `→` (right arrow) | Accept the grey autosuggestion |
 | `z <partial>` | Jump to a frequent directory (zoxide) |
-
----
-
-## Local coding LLM
-
-An **opt-in**, fully offline coding model driven by **opencode**. Install with `./install.sh local-llm` (not part of `all`/`core` — it downloads ~30 GB).
-
-- **Model:** Qwen3.6-27B, `unsloth/Qwen3.6-27B-UD-MLX-6bit` (dense, 6-bit MLX; a vision-language checkpoint served text-only).
-- **Runtime:** [Rapid-MLX](https://github.com/raullenchai/Rapid-MLX) — OpenAI-compatible server on `http://localhost:5413/v1`, TurboQuant `k8v4` KV cache.
-- **Context:** 100k tokens (capped client-side in opencode).
-- **Footprint:** ~33 GiB RAM while running (fits a 48 GB Mac); freed on `llm stop`.
-
-### Everything lives in `~/llm`
-```
-~/llm/
-├── llm                              # control script
-├── opencode.json                    # config
-├── venv/bin/{rapid-mlx,hf}          # Python runtime + downloader
-├── models/Qwen3.6-27B-UD-MLX-6bit/  # the model (~30 GB)
-└── state/{server.pid,server.log}    # runtime state
-```
-**Nothing runs outside `~/llm`** — invoke the control script directly as `~/llm/llm …` (or `cd ~/llm && ./llm …`). The **only** file placed outside is the opencode config copy at `~/.config/opencode/opencode.json` — opencode reads its config only from there. Edit `~/llm/opencode.json` and `~/llm/llm sync` (or `start`) re-copies it. opencode itself is a Homebrew formula.
-
-### Use it
-```bash
-~/llm/llm start    # deploy config, load the model, serve on :5413 (~33 GiB RAM)
-opencode           # in any project — uses the local model
-~/llm/llm status   # running? how much RAM?
-~/llm/llm sync     # (re)copy ~/llm/opencode.json → ~/.config/opencode after an edit
-~/llm/llm stop     # unload and free the RAM
-~/llm/llm logs     # tail the server log
-~/llm/llm restart
-```
-Prefer a short `llm`? `cd ~/llm && ./llm start`, or add your own alias — the
-installer doesn't put anything on your `PATH`.
-
-### Tune it (env vars, read by `~/llm/llm`)
-| Variable | Default | Meaning |
-|----------|---------|---------|
-| `LLM_MODEL` | `~/llm/models/Qwen3.6-27B-UD-MLX-6bit` | model path or HF id/alias |
-| `LLM_PORT` | `5413` | server port (must match opencode's `baseURL`) |
-| `LLM_KV` | `k8v4` | TurboQuant KV: `k8v4` \| `v4` \| `none` |
-| `LLM_GPU_UTIL` | `0.75` | GPU-memory ceiling (fraction) |
-
-Example: `LLM_KV=none llm start` (fp16 KV, if tool-calls misbehave).
-
-### Config
-Edit **`~/llm/opencode.json`** (the source of truth), then run **`llm sync`** to
-copy it to `~/.config/opencode/opencode.json` where opencode reads it (`llm start`
-also syncs automatically). It registers the `local` provider and the 100k cap:
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "provider": {
-    "local": {
-      "npm": "@ai-sdk/openai-compatible",
-      "options": { "baseURL": "http://localhost:5413/v1" },
-      "models": { "unsloth/Qwen3.6-27B-UD-MLX-6bit": { "limit": { "context": 100000, "output": 8192 } } }
-    }
-  },
-  "model": "local/unsloth/Qwen3.6-27B-UD-MLX-6bit"
-}
-```
-
-### If something's off
-- **`llm status` shows `model not found`** — the download didn't finish; re-run `./install.sh local-llm` (idempotent).
-- **opencode errors on startup** — the config is invalid JSON or points at the wrong port; check `~/.config/opencode/opencode.json` and that `LLM_PORT` matches its `baseURL`.
-- **Model won't load** (VL checkpoint) — fall back to a Rapid-MLX alias: `LLM_MODEL=qwen3.6-27b-ud llm start` (or `qwen3.6-27b-8bit`), or `uv pip install --python ~/llm/venv/bin/python 'rapid-mlx[vision]'`.
-- **Tool-calls produce broken JSON** — set `LLM_KV=none` (fp16 KV) and restart.
-- **Very long contexts / OOM** — optionally raise the GPU wired limit (needs `sudo`, resets on reboot): `sudo sysctl -w iogpu.wired_limit_mb=36864`.
 
 ---
 
