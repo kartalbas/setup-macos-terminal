@@ -1,5 +1,10 @@
 # Managed by repos/setup-macos-terminal — reload after edits with:  . $PROFILE
-# PowerShell (pwsh) developer profile — mirrors the zsh setup in config/zsh/zshrc.
+# PowerShell (pwsh) developer profile.
+#
+# SIBLING FILE: config/zsh/zshrc. The aliases, the eza icon handling and the
+# kubectl/git shortcuts below are deliberate mirrors of it — change one, change
+# the other. (Checked by nothing but your eyes; the two shells are too different
+# to share a generated file.)
 
 # ───────────────────────────── PATH ─────────────────────────────
 $localBin = Join-Path $HOME '.local/bin'                  # Claude Code + user binaries
@@ -45,10 +50,23 @@ if (Get-Command mise     -ErrorAction SilentlyContinue) { Invoke-Expression (mis
 # ──────────────────────────── Aliases ───────────────────────────
 # Functions (not Set-Alias) because PowerShell aliases can't carry arguments.
 if (Get-Command eza -ErrorAction SilentlyContinue) {
-  function ls { eza --icons --group-directories-first @args }
-  function ll { eza -lah --icons --git --group-directories-first @args }
-  function la { eza -a --icons @args }
-  function lt { eza --tree --level=2 --icons @args }
+  # Same two traps as ~/.zshrc — keep the two files in step:
+  #   1. The glyphs live in the terminal's *font*, not in eza. This profile is
+  #      machine-wide, so only turn icons on where a Nerd Font is likely.
+  #   2. eza's own `--icons=auto` renders NOTHING (0.23.x), and a bare `--icons`
+  #      means exactly that auto — so always pass an explicit always/never.
+  # Override per machine in profile.local.ps1:  $env:EZA_ICONS = 'always'
+  if (-not $env:EZA_ICONS) {
+    $env:EZA_ICONS = if ($env:TERM_PROGRAM -in 'WezTerm','iTerm.app','ghostty','kitty','Alacritty') { 'always' } else { 'never' }
+  }
+  # A function, not a fixed string: $env:EZA_ICONS and the redirection check are
+  # evaluated per call, so a later profile.local.ps1 override still wins and
+  # `ll > file` stays free of private-use glyphs.
+  function Get-EzaIcons { if ([Console]::IsOutputRedirected) { 'never' } else { $env:EZA_ICONS } }
+  function ls { eza "--icons=$(Get-EzaIcons)" --group-directories-first @args }
+  function ll { eza "--icons=$(Get-EzaIcons)" -lah --git --group-directories-first @args }
+  function la { eza "--icons=$(Get-EzaIcons)" -a @args }
+  function lt { eza "--icons=$(Get-EzaIcons)" --tree --level=2 @args }
 }
 if (Get-Command bat -ErrorAction SilentlyContinue) {
   function cat { bat --paging=never @args }

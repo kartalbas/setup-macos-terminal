@@ -1,4 +1,11 @@
 # Managed by repos/setup-macos-terminal — reload after edits with:  exec zsh
+#
+# SIBLING FILE: config/pwsh/profile.ps1 mirrors the aliases, the eza icon
+# handling and the kubectl/git shortcuts for PowerShell — change one, change
+# the other.
+#
+# Machine-specific tweaks belong in ~/.zshrc.local (sourced at the very bottom);
+# re-running `./install.sh link` replaces THIS file but never touches that one.
 
 # ───────────────────────────── PATH ─────────────────────────────
 export PATH="$HOME/.local/bin:$PATH"          # Claude Code + user binaries
