@@ -8,11 +8,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/common.sh"
 require_macos; require_brew
 
 # --- Runtimes the agents lean on (idempotent; also covered by the cli step) --
-for f in node uv pipx; do
-  if brew_has_formula "$f"; then skip "$f"; else
-    info "Installing $f..."; run brew install "$f"
-  fi
-done
+install_formula node uv pipx
 has pipx && run pipx ensurepath >/dev/null 2>&1 || true
 
 # --- Claude Code (primary) ---------------------------------------------------

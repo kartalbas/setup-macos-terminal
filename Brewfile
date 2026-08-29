@@ -1,21 +1,32 @@
 # Brewfile — declarative package manifest for the macOS dev terminal setup.
-# Apply with:  brew bundle --file=Brewfile
-# Check state: brew bundle check --file=Brewfile
-# Remove extras: brew bundle cleanup --file=Brewfile   (dry-run by default)
-
-# ───────────────────────── Taps ─────────────────────────
-tap "hashicorp/tap"          # vault, terraform (moved out of core after license change)
+#
+# This is the SINGLE source of truth for what gets installed. Every step in
+# scripts/ reads its list from here (see brewfile_items in lib/common.sh), so
+# editing this file is what changes the install — there is no second copy.
+#
+#   ./install.sh cli                     install one group through the installer
+#   ./install.sh --status                show installed vs. missing, per group
+#   brew bundle --file=Brewfile          install everything at once, no steps
+#   brew bundle check --file=Brewfile    check without installing
+#   brew bundle cleanup --file=Brewfile  list extras (dry-run by default)
+#
+# Each entry belongs to the `#: group <name>` marker above it. Group names match
+# the installer steps: terminal, shell, cli, devops. A marker stays in effect
+# until the next one, so keep each group's entries together.
 
 # ───────────────────── Terminal & Fonts ─────────────────
+#: group terminal
 cask "wezterm"                              # GPU terminal; same app + config on macOS & Windows
 cask "font-caskaydia-cove-nerd-font"        # Cascadia Code + glyphs (Windows Terminal's font)
 cask "font-jetbrains-mono-nerd-font"        # great alternative coding font
 
 # ─────────────────────── GUI apps ───────────────────────
+#: group terminal
 cask "microsoft-edge"                       # Microsoft Edge browser
-cask "jetbrains-toolbox"                     # JetBrains IDE manager (Toolbox)
+cask "jetbrains-toolbox"                    # JetBrains IDE manager (Toolbox)
 
 # ───────────────────── Shell & Prompt ───────────────────
+#: group shell
 brew "starship"                  # fast, informative cross-shell prompt
 brew "zsh-autosuggestions"       # ghost-text completion from history
 brew "zsh-syntax-highlighting"   # command coloring as you type
@@ -23,7 +34,8 @@ brew "zsh-completions"           # extra completion definitions
 brew "powershell"                # PowerShell LTS (pwsh) — cross-platform shell
 
 # ───────────────────── Modern CLI core ──────────────────
-brew "eza"            # ls replacement (icons, git status, tree)
+#: group cli
+brew "eza"           # ls replacement (icons, git status, tree)
 brew "bat"           # cat with syntax highlighting
 brew "ripgrep"       # rg — fast, gitignore-aware grep
 brew "fd"            # friendly find
@@ -35,6 +47,7 @@ brew "gh"            # GitHub CLI
 brew "tmux"          # terminal multiplexer / persistent sessions
 brew "jq"            # JSON processor
 brew "yq"            # YAML/JSON/XML processor
+brew "shellcheck"    # shell script linter — what tools/lint.sh and CI run
 brew "tree"
 brew "wget"
 brew "htop"
@@ -43,6 +56,7 @@ brew "tldr"          # concise command examples
 brew "fastfetch"     # system info banner
 
 # ─────────────── Languages & Version Management ──────────
+#: group cli
 brew "mise"          # polyglot runtime manager (node, python, go, ...)
 brew "nvm"           # Node Version Manager — per-project node versions
 brew "node"          # runtime for Claude Code MCP servers & JS tooling
@@ -52,6 +66,8 @@ brew "cocoapods"     # iOS/macOS dependency manager (Flutter iOS, Swift/ObjC)
 cask "flutter"       # Flutter SDK — mobile / web / desktop UI toolkit (flutter CLI)
 
 # ──────────────── DevOps / Cloud-Native ─────────────────
+#: group devops
+tap "hashicorp/tap"              # vault, terraform (moved out of core after license change)
 brew "kubernetes-cli"            # kubectl
 brew "kubectx"                   # kubectx + kubens (context/namespace switch)
 brew "kubecolor"                 # colorized kubectl output
@@ -70,7 +86,7 @@ brew "dive"                      # inspect docker image layers
 brew "awscli"                    # AWS    → aws
 brew "azure-cli"                 # Azure  → az
 cask "google-cloud-sdk"          # Google → gcloud / gsutil / bq
-# gh (GitHub CLI) is installed in the CLI step
+# gh (GitHub CLI) lives in the cli group
 
-# ──────────── Container runtime (local Docker + k8s) ─────
-cask "orbstack"      # lightweight Docker Desktop alternative + local Kubernetes
+# Container runtime (local Docker + k8s)
+cask "orbstack"                  # lightweight Docker Desktop alternative + local Kubernetes

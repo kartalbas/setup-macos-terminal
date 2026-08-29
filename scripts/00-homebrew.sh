@@ -32,6 +32,6 @@ if [[ -x "$BREW" ]]; then
   fi
 fi
 
-info "Updating Homebrew..."
-run brew update --quiet || warn "brew update failed (continuing)"
+# Refresh the formula index (at most once a day — see brew_refresh_index).
+brew_refresh_index
 ok "Homebrew ready."
