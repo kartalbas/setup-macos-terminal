@@ -119,7 +119,7 @@ setup-macos-terminal/
 ├── install.sh              # orchestrator with menu + per-step flags + --status
 ├── Brewfile                # declarative package manifest — THE package list
 ├── lib/common.sh           # logging, error trapping, Brewfile + idempotency helpers
-├── tools/lint.sh           # bash -n + shellcheck + Brewfile sanity (CI runs this)
+├── tools/lint.sh           # bash -n + shellcheck + Brewfile sanity — run before committing
 ├── scripts/                # one idempotent script per step
 │   ├── 00-homebrew.sh
 │   ├── 05-configure.sh     # asks git identity → renders generated/gitconfig
@@ -168,8 +168,9 @@ setup-macos-terminal/
   this repo's copies (backing yours up first). Machine-specific tweaks belong in
   `~/.zshrc.local` / `~/.config/powershell/profile.local.ps1`, which are sourced
   last and never touched.
-- **Linted.** `./tools/lint.sh` runs `bash -n`, `shellcheck` and a Brewfile
-  sanity check; CI runs the same script on every push and PR.
+- **Linted, by hand.** `./tools/lint.sh` runs `bash -n`, `shellcheck` and a
+  Brewfile sanity check. Run it before committing — there is deliberately no CI
+  workflow; a repo this size doesn't need one.
 - **Local-first agents.** Claude Code is installed natively to `~/.local/bin`
   with its runtimes; nothing depends on a remote box.
 

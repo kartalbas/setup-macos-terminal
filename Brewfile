@@ -47,7 +47,7 @@ brew "gh"            # GitHub CLI
 brew "tmux"          # terminal multiplexer / persistent sessions
 brew "jq"            # JSON processor
 brew "yq"            # YAML/JSON/XML processor
-brew "shellcheck"    # shell script linter — what tools/lint.sh and CI run
+brew "shellcheck"    # shell script linter — used by tools/lint.sh
 brew "tree"
 brew "wget"
 brew "htop"

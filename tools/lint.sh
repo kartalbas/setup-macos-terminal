@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # tools/lint.sh — the repo's own checks: bash syntax + shellcheck.
-# Run locally (./tools/lint.sh) and in CI (.github/workflows/lint.yml), so the
-# two can never check different things.
+# Run it by hand before committing:  ./tools/lint.sh
+# (Deliberately no CI workflow — this repo is small enough to lint locally.)
 set -Eeuo pipefail
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
