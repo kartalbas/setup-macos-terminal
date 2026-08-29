@@ -3,7 +3,7 @@
 #
 # Asks for your git name & email, then renders config/git/gitconfig.example
 # into generated/gitconfig. Everything else (WezTerm, Starship, zsh) ships as
-# standard config and is symlinked as-is by the 'link' step — no rendering.
+# standard config and is copied as-is by the 'link' step — no rendering.
 # Answers are saved to generated/answers.env so re-runs can reuse them.
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/common.sh"
 require_macos
@@ -17,6 +17,7 @@ ANSWER_VARS=(GIT_NAME GIT_EMAIL)
 # ── Work out sensible defaults ─────────────────────────────────────────────
 # Prefer a previously saved answer, then your existing global git config, then
 # a generic placeholder. Nothing personal is ever hardcoded in this (public) repo.
+# shellcheck source=/dev/null   # generated at runtime, nothing to check statically
 [[ -f "$ANSWERS" ]] && source "$ANSWERS"   # may set GIT_NAME / GIT_EMAIL
 default_name="${GIT_NAME:-}"
 if [[ -z "$default_name" || "$default_name" == "Your Name" ]]; then
@@ -58,6 +59,6 @@ row() { printf '  %s%s%s\n      %s%s%s\n' "$C_GREEN$C_BOLD" "$1" "$C_RESET" "$C_
 row "generated/gitconfig"     "$GIT_NAME <$GIT_EMAIL>"
 echo
 printf '  %sAnswers saved to:%s generated/answers.env (edit & re-run to change)\n' "$C_DIM" "$C_RESET"
-info "WezTerm, Starship & zsh are standard configs — symlinked as-is, nothing to answer."
+info "WezTerm, Starship & zsh are standard configs — copied as-is, nothing to answer."
 ok "Configuration generated."
-info "These get symlinked into place by the ${C_BOLD}link${C_RESET} step (run as part of ${C_BOLD}all${C_RESET}/${C_BOLD}core${C_RESET})."
+info "These get copied into place by the ${C_BOLD}link${C_RESET} step (run as part of ${C_BOLD}all${C_RESET}/${C_BOLD}core${C_RESET})."
