@@ -142,11 +142,25 @@ The only personal data. Re-run the wizard and re-link:
 `config/git/gitconfig.example` feeds the wizard, which renders the git-ignored `generated/gitconfig`.
 
 ### Change a tooling config (font, colors, prompt, aliases…)
-WezTerm, Starship and zsh are **copied** to their destinations on install (not symlinked). After install, edit the deployed file directly (e.g. `~/.config/wezterm/wezterm.lua`, `~/.zshrc`) — the repo is only the installer and can be deleted. Changes take effect on the next new window / `exec zsh`.
+WezTerm, Starship and zsh are **copied** to their destinations on install (not symlinked), so the repo is only the installer and can be deleted. Where to put a change depends on whether you'll ever re-run the installer:
+
+| You want | Edit | Survives `./install.sh link`? |
+|----------|------|-------------------------------|
+| A tweak on **this machine only** | `~/.zshrc.local` · `~/.config/powershell/profile.local.ps1` | **Yes** — never touched |
+| A change for **every machine** | `config/zsh/zshrc` etc. here, then `./install.sh link` | Yes — it *is* the source |
+| A one-off, repo already deleted | `~/.zshrc`, `~/.config/wezterm/wezterm.lua` directly | No — a later `link` replaces it (backup kept) |
+
+`~/.zshrc.local` is sourced at the very bottom of the managed `~/.zshrc`, so it can override anything above it. Changes take effect on the next new window / `exec zsh`.
+
+### See what's already installed
+```bash
+./install.sh --status         # per group: installed vs. missing, plus config drift
+```
+It reports against the same `Brewfile` groups and config list the installer uses, so it can't disagree with what a real run would do. A config line marked *differs from this repo* is exactly the third row of the table above.
 
 ### Restore a backup / re-run one step
 The `link` step backs up originals (`~/.zshrc.backup.*`, `~/.gitconfig.backup.*`). Everything is idempotent:
 ```bash
 ./install.sh shell            # re-run a single step
-./install.sh --dry-run all    # preview without changing anything
+./install.sh --dry-run all    # preview every action without changing anything
 ```

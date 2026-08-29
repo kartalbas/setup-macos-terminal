@@ -25,7 +25,11 @@ Or non-interactively:
 ./install.sh devops             # just the kubectl/argocd/vault/helm stack
 ./install.sh agents             # just Claude Code + runtimes
 ./install.sh --dry-run all      # preview every action, change nothing
+./install.sh --status           # what's installed already, what's missing
 ```
+
+Only `configure`, `core`, `all` and `link` ever ask a question (your git name
+and email). `./install.sh devops`, `cli`, `agents`… run without a prompt.
 
 After it finishes, open a **new WezTerm window** (or `exec zsh`).
 
@@ -44,8 +48,21 @@ After it finishes, open a **new WezTerm window** (or `exec zsh`).
 | **agents**   | **Claude Code** (native, in `~/.local/bin`), node/uv runtimes, optional **GitHub login** (`gh auth login`) + aider + Copilot CLI |
 | **link**     | Copies `.zshrc`, WezTerm, Starship, `.gitconfig` into place — real files, independent of this repo (backs up existing) |
 
-The package list lives in [`Brewfile`](./Brewfile) — edit it and re-run, or
-`brew bundle --file=Brewfile` directly.
+### The Brewfile is the single source of truth
+
+Package lists are **not** duplicated in the scripts. Every entry in
+[`Brewfile`](./Brewfile) carries a `#: group <name>` marker, and each step
+installs exactly its own group:
+
+```ruby
+#: group cli
+brew "eza"           # ls replacement (icons, git status, tree)
+brew "bat"           # cat with syntax highlighting
+```
+
+So adding a tool means editing one file. `./install.sh cli`, `--status` and
+`brew bundle --file=Brewfile` all read the same list and cannot drift apart —
+`tools/lint.sh` fails the build if a group ever resolves to nothing.
 
 ---
 
@@ -65,8 +82,10 @@ Because your name/email are personal, they're **never committed**: the
 `configure` wizard renders them into `generated/gitconfig`, and the entire
 `generated/` directory is git-ignored.
 
-`configure` runs **automatically at startup** of `./install.sh` (and is the
-first step of `all`/`core`). It asks only two things:
+`configure` is the first step of `all`/`core`, the first entry in the menu, and
+is pulled in on demand by `link` when `generated/gitconfig` is missing — so it
+runs when it's needed and never prompts a step that doesn't use it. It asks only
+two things:
 
 ```
 ▸ Set up your git identity — the only personal data we store
@@ -97,9 +116,10 @@ you can delete this repo after install.
 
 ```
 setup-macos-terminal/
-├── install.sh              # orchestrator with menu + per-step flags
-├── Brewfile                # declarative package manifest
-├── lib/common.sh           # logging, error trapping, idempotency helpers
+├── install.sh              # orchestrator with menu + per-step flags + --status
+├── Brewfile                # declarative package manifest — THE package list
+├── lib/common.sh           # logging, error trapping, Brewfile + idempotency helpers
+├── tools/lint.sh           # bash -n + shellcheck + Brewfile sanity (CI runs this)
 ├── scripts/                # one idempotent script per step
 │   ├── 00-homebrew.sh
 │   ├── 05-configure.sh     # asks git identity → renders generated/gitconfig
@@ -112,7 +132,8 @@ setup-macos-terminal/
 ├── config/                 # standard configs, committed + copied on install
 │   ├── wezterm/wezterm.lua
 │   ├── starship/starship.toml
-│   ├── zsh/zshrc
+│   ├── zsh/zshrc               # sibling of pwsh/profile.ps1 — change both
+│   ├── pwsh/profile.ps1
 │   └── git/gitconfig.example   # the ONLY template (user-specific: name/email)
 ├── generated/              # your rendered gitconfig (git-ignored, per-machine)
 └── docs/
@@ -140,7 +161,15 @@ setup-macos-terminal/
   `--icons=auto` — and therefore a bare `--icons` — renders **nothing** as of
   0.23.x, so the config always passes an explicit `always`/`never`.
 - **Modular.** Run one step or all. Each `scripts/*.sh` works standalone.
-- **Dry-run + non-interactive.** `--dry-run` previews; `--yes` automates.
+- **Dry-run + non-interactive.** `--dry-run` previews every package and file the
+  run would touch (the step scripts still execute — they just print instead of
+  acting); `--yes` automates; `--status` reports without changing anything.
+- **Your edits stay yours.** Re-running `link` replaces the managed configs with
+  this repo's copies (backing yours up first). Machine-specific tweaks belong in
+  `~/.zshrc.local` / `~/.config/powershell/profile.local.ps1`, which are sourced
+  last and never touched.
+- **Linted.** `./tools/lint.sh` runs `bash -n`, `shellcheck` and a Brewfile
+  sanity check; CI runs the same script on every push and PR.
 - **Local-first agents.** Claude Code is installed natively to `~/.local/bin`
   with its runtimes; nothing depends on a remote box.
 
