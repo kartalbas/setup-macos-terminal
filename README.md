@@ -130,6 +130,15 @@ setup-macos-terminal/
   delete it afterwards and everything keeps working. Existing files are moved to
   `*.backup.<timestamp>` first (an old symlink from a previous install is
   replaced by a copy).
+- **Icons follow the terminal, not the shell.** `~/.zshrc` is machine-wide, but
+  Nerd-Font glyphs live in the *font* of whichever terminal is running. So `ls` /
+  `ll` enable eza icons only for terminals known to carry a Nerd Font (WezTerm,
+  iTerm2, Ghostty, kitty, Alacritty) and only on a TTY; anything else gets plain
+  output instead of tofu boxes. Override per machine in `~/.zshrc.local`:
+  `EZA_ICONS=always` (e.g. Terminal.app once you set `CaskaydiaCove Nerd Font
+  Mono` in its profile) or `EZA_ICONS=never`. Note that eza's own
+  `--icons=auto` — and therefore a bare `--icons` — renders **nothing** as of
+  0.23.x, so the config always passes an explicit `always`/`never`.
 - **Modular.** Run one step or all. Each `scripts/*.sh` works standalone.
 - **Dry-run + non-interactive.** `--dry-run` previews; `--yes` automates.
 - **Local-first agents.** Claude Code is installed natively to `~/.local/bin`

@@ -59,12 +59,35 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --info=inline'
 
 # ──────────────────────────── Aliases ───────────────────────────
+# Nerd-Font icons. Two traps, both hit in practice:
+#   1. The glyphs live in the *font*, not in eza. A terminal set to SF Mono or
+#      Menlo (Terminal.app's default) draws them as tofu boxes. This file is
+#      machine-wide, so only turn icons on where a Nerd Font is actually likely.
+#   2. eza's own `--icons=auto` renders NOTHING, even on a real TTY (0.23.x), and
+#      a bare `--icons` means exactly that auto. Passing it silently costs you
+#      every icon — so always pass an explicit always/never.
+# Override per machine in ~/.zshrc.local (sourced further down):
+#   EZA_ICONS=always   # e.g. Terminal.app after setting a Nerd Font in its profile
+#   EZA_ICONS=never    # turn them off everywhere
+case "$TERM_PROGRAM" in
+  WezTerm|iTerm.app|ghostty|kitty|Alacritty) : "${EZA_ICONS:=always}" ;;
+  *)                                         : "${EZA_ICONS:=never}"  ;;
+esac
+
 # modern replacements
-command -v eza  >/dev/null && {
-  alias ls='eza --icons --group-directories-first'
-  alias ll='eza -lah --icons --git --group-directories-first'
-  alias la='eza -a --icons'
-  alias lt='eza --tree --level=2 --icons'
+command -v eza >/dev/null && {
+  # A wrapper, not plain aliases: $EZA_ICONS and the TTY check must be evaluated
+  # per call. That keeps a later ~/.zshrc.local override effective, and keeps
+  # `ll > file` / `ll | grep` free of private-use glyphs.
+  eza() {
+    local when=$EZA_ICONS
+    [[ -t 1 ]] || when=never
+    command eza --icons="$when" "$@"
+  }
+  alias ls='eza --group-directories-first'
+  alias ll='eza -lah --git --group-directories-first'
+  alias la='eza -a'
+  alias lt='eza --tree --level=2'
 }
 command -v bat     >/dev/null && { alias cat='bat --paging=never'; export BAT_THEME='ansi'; }
 command -v lazygit >/dev/null && alias lg='lazygit'
