@@ -20,19 +20,62 @@ config.freetype_render_target = "HorizontalLcd"     -- crisp text like Windows T
 
 config.window_background_opacity = 1.0
 config.macos_window_background_blur = 0
-config.window_decorations = "RESIZE"
+-- Native macOS title bar: keeps the traffic lights (close / minimise / zoom) and
+-- the standard window menu. "RESIZE" alone drops the title bar and with it every
+-- macOS window control, leaving only a drag border.
+config.window_decorations = "TITLE | RESIZE"
 config.window_padding = { left = 10, right = 10, top = 8, bottom = 6 }
 config.initial_cols = 120
 config.initial_rows = 34
 config.scrollback_lines = 20000
 config.audible_bell = "Disabled"
 
--- Tab bar styled like Windows Terminal (tabs on top, new-tab "+" button)
-config.use_fancy_tab_bar = true
+-- ───────────────────────────── Tab bar ─────────────────────────────
+-- Retro tab bar, deliberately NOT the fancy one. The fancy bar draws a close
+-- "x" on every tab that is far too easy to hit by accident, and this WezTerm
+-- (20240203) has no option to hide it — `show_close_tab_button_in_tabs` only
+-- exists in later builds. The retro bar renders each tab purely from whatever
+-- format-tab-title returns, so there is no close button at all, and it lets us
+-- give every tab its own colour.
+config.use_fancy_tab_bar = false
 config.tab_bar_at_bottom = false
 config.hide_tab_bar_if_only_one_tab = false
 config.show_new_tab_button_in_tab_bar = true
-config.tab_max_width = 28
+config.tab_max_width = 32
+
+-- One colour per tab, keyed on the tab's id rather than its index so a tab keeps
+-- its colour when its neighbours are closed. Dim variants are spelled out rather
+-- than computed, so no colour-maths API has to exist for this to work.
+local TAB_COLORS = {
+  { on = "#2f6fd0", off = "#1b3f76" },  -- blue
+  { on = "#1f8a3b", off = "#124f22" },  -- green
+  { on = "#a3721a", off = "#5d410f" },  -- amber
+  { on = "#b3202f", off = "#66121b" },  -- red
+  { on = "#7a1f8f", off = "#461252" },  -- purple
+  { on = "#17708a", off = "#0d404f" },  -- teal
+  { on = "#a3336f", off = "#5d1d3f" },  -- magenta
+  { on = "#4b5563", off = "#2b3138" },  -- slate
+}
+
+wezterm.on("format-tab-title", function(tab, _tabs, _panes, _cfg, _hover, max_width)
+  local colors = TAB_COLORS[(tab.tab_id % #TAB_COLORS) + 1]
+  -- A name set with Ctrl+Shift+I wins; otherwise fall back to what the running
+  -- program reports, which is what the fancy bar showed before.
+  local title = tab.tab_title
+  if title == nil or title == "" then
+    title = tab.active_pane.title
+  end
+  local label = " " .. tostring(tab.tab_index + 1) .. ": " .. title .. " "
+  if #label > max_width then
+    label = wezterm.truncate_right(label, math.max(max_width - 2, 1)) .. "… "
+  end
+  return {
+    { Background = { Color = tab.is_active and colors.on or colors.off } },
+    { Foreground = { Color = tab.is_active and "#ffffff" or "#b9c0cb" } },
+    { Attribute = { Intensity = tab.is_active and "Bold" or "Normal" } },
+    { Text = label },
+  }
+end)
 
 -- ─────────────────────── Behaviour / shell ────────────────────────
 config.default_cwd = wezterm.home_dir
@@ -87,6 +130,22 @@ config.keys = {
   -- Tabs ------------------------------------------------------------------
   { key = "t", mods = "CTRL|SHIFT", action = act.SpawnTab("CurrentPaneDomain") },
   { key = "w", mods = "CTRL|SHIFT", action = act.CloseCurrentTab({ confirm = false }) },
+  -- Rename the active tab. Ctrl+Shift+I is free in both WezTerm's defaults and
+  -- this config; it is also reachable from the command palette (Ctrl+Shift+P).
+  {
+    key = "i",
+    mods = "CTRL|SHIFT",
+    action = act.PromptInputLine({
+      description = "Enter a new name for this tab:",
+      action = wezterm.action_callback(function(window, _pane, line)
+        -- line is nil when the prompt is cancelled, "" when submitted empty —
+        -- treat empty as "go back to the program-reported title".
+        if line ~= nil then
+          window:active_tab():set_title(line)
+        end
+      end),
+    }),
+  },
   { key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },
   { key = "Tab", mods = "CTRL|SHIFT", action = act.ActivateTabRelative(-1) },
   { key = "1", mods = "CTRL|SHIFT", action = act.ActivateTab(0) },
